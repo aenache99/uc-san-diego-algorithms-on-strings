@@ -1,26 +1,55 @@
-# python3
+# Uses python3
 import sys
 
-NA = -1
 
-class Node:
-	def __init__ (self):
-		self.next = [NA] * 4
-		self.patternEnd = False
+class TrieNode:
+    def __init__(self, is_terminal=False):
+        self.children = dict()
+        self.is_terminal = is_terminal
 
-def solve (text, n, patterns):
-	result = []
+    def add_child(self, value, is_terminal=False):
+        if value not in self.children:
+            self.children[value] = TrieNode(is_terminal)
+        elif is_terminal:
+            self.children[value].is_terminal = True
 
-	// write your code here
 
-	return result
+class Trie:
+    def __init__(self, patterns):
+        self.patterns = patterns
 
-text = sys.stdin.readline ().strip ()
-n = int (sys.stdin.readline ().strip ())
-patterns = []
-for i in range (n):
-	patterns += [sys.stdin.readline ().strip ()]
+        self.tree = TrieNode()
+        self._construct_trie(self.patterns)
 
-ans = solve (text, n, patterns)
+    def _construct_trie(self, patterns):
+        for pattern in patterns:
+            cur = self.tree
+            for c in pattern:
+                cur.add_child(c)
+                cur = cur.children[c]
+            cur.is_terminal = True
 
-sys.stdout.write (' '.join (map (str, ans)) + '\n')
+    def find_occurrences(self, text):
+        found_positions = []
+        for pos in range(len(text)):
+            v = self.tree
+
+            for c in text[pos:]:
+                if c in v.children:
+                    v = v.children[c]
+                    if v.is_terminal:
+                        found_positions.append(pos)
+                        break
+                else:
+                    break
+        return found_positions
+
+
+if __name__ == "__main__":
+    text = sys.stdin.readline().strip()
+    num_patterns = int(sys.stdin.readline())
+    patterns = [sys.stdin.readline().strip() for _ in range(num_patterns)]
+
+    tree = Trie(patterns)
+    found_positions = tree.find_occurrences(text)
+    print(" ".join(map(str, found_positions)))
